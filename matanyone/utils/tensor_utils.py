@@ -46,9 +46,10 @@ def unpad(img: torch.Tensor, pad: Iterable[int]) -> torch.Tensor:
 # @torch.jit.script
 def aggregate(prob: torch.Tensor, dim: int) -> torch.Tensor:
     with safe_autocast(enabled=False):
-        prob = prob.float()
+        prob = prob.float().cpu()
         new_prob = torch.cat([torch.prod(1 - prob, dim=dim, keepdim=True), prob],
                              dim).clamp(1e-7, 1 - 1e-7)
+        new_prob = new_prob.to(device='cuda')
         logits = torch.log((new_prob / (1 - new_prob)))  # (0, 1) --> (-inf, inf)
 
         return logits

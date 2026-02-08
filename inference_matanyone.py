@@ -94,6 +94,7 @@ def main(input_path, mask_path, output_path, ckpt_path, n_warmup=10, r_erode=10,
         image_np = np.array(image.permute(1,2,0))       # for output visualize
         image = (image / 255.).float().to(device)         # for network input
 
+
         if ti == 0:
             output_prob = processor.step(image, mask, objects=objects)      # encode given mask
             output_prob = processor.step(image, first_frame_pred=True)      # first frame for prediction

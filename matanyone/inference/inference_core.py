@@ -543,8 +543,8 @@ class InferenceCore:
         
         fgr_filename = f"{output_path}/{video_name}_fgr.mp4"
         alpha_filename = f"{output_path}/{video_name}_pha.mp4"
-        
-        imageio.mimwrite(fgr_filename, fgrs, fps=fps, quality=7)
-        imageio.mimwrite(alpha_filename, phas, fps=fps, quality=7)
+      
+        imageio.mimwrite(fgr_filename, fgrs, fps=fps, quality=7,macro_block_size=None)
+        imageio.mimwrite(alpha_filename, phas, fps=fps, quality=7,macro_block_size=None)
         
         return (fgr_filename,alpha_filename)
