@@ -9,7 +9,7 @@ import torchvision
 IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG')
 VIDEO_EXTENSIONS = ('.mp4', '.mov', '.avi', '.MP4', '.MOV', '.AVI')
 
-def read_frame_from_videos(frame_root):
+def read_frame_from_videos(frame_root,start_frame,end_frame):
     if frame_root.endswith(VIDEO_EXTENSIONS):  # Video file path
         video_name = os.path.basename(frame_root)[:-4]
         frames, _, info = torchvision.io.read_video(filename=frame_root, pts_unit='sec', output_format='TCHW') # RGB
@@ -18,14 +18,20 @@ def read_frame_from_videos(frame_root):
         video_name = os.path.basename(frame_root)
         frames = []
         fr_lst = sorted(os.listdir(frame_root))
-        for fr in fr_lst:
+        print(len(fr_lst))
+        print(start_frame)
+        print(end_frame)
+        if (len(fr_lst) < end_frame):
+            end_frame = len(fr_lst)
+        for fr in fr_lst[start_frame:end_frame]:
             frame = cv2.imread(os.path.join(frame_root, fr))[...,[2,1,0]] # RGB, HWC
             frames.append(frame)
+        print(len(frames))
         fps = 24  # default
         frames = torch.Tensor(np.array(frames)).permute(0, 3, 1, 2).contiguous() # TCHW
-    
-    length = frames.shape[0]
 
+    length = frames.shape[0]
+    print(fps)
     return frames, fps, length, video_name
 
 def get_video_paths(input_root):
