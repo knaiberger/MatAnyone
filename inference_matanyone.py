@@ -3,6 +3,7 @@ import cv2
 import tqdm
 import imageio
 import numpy as np
+import time
 from PIL import Image
 
 import torch
@@ -44,11 +45,15 @@ def main(input_path, mask_path, output_path, ckpt_path, n_warmup=10, r_erode=10,
     # load input frames
     count = 0
     length = 500
+    start = time.time()
     while(length == 500):
-        print(count)
+        #print(count)
+        start_read = time.time() 
         vframes, fps, length, video_name = read_frame_from_videos(input_path,count*500,(count+1)*500)
+        end_read = time.time()
+        start = start + end_read - start_read
         count = count + 1
-        print(length)
+        #print(length)
         repeated_frames = vframes[0].unsqueeze(0).repeat(n_warmup, 1, 1, 1) # repeat the first frame for warmup
         vframes = torch.cat([repeated_frames, vframes], dim=0).float()
         length += n_warmup  # update length
@@ -95,7 +100,7 @@ def main(input_path, mask_path, output_path, ckpt_path, n_warmup=10, r_erode=10,
         phas = []
         fgrs = []
         for ti in tqdm.tqdm(range(length)):
-            print("yes")
+            
             # load the image as RGB; normalization is done within the model
             image = vframes[ti]
 
@@ -127,7 +132,7 @@ def main(input_path, mask_path, output_path, ckpt_path, n_warmup=10, r_erode=10,
                 phas.append(pha)
                 if save_image:
                     video_name = ""
-                    print(f'{output_path}/{video_name}/pha/{str(ti-n_warmup+(count-1)*500).zfill(4)}.png')
+                    #print(f'{output_path}/{video_name}/pha/{str(ti-n_warmup+(count-1)*500).zfill(4)}.png')
                     cv2.imwrite(f'{output_path}/{video_name}/pha/{str(ti-n_warmup+(count-1)*500).zfill(4)}.png', pha)
                     cv2.imwrite(f'{output_path}/{video_name}/fgr/{str(ti-n_warmup+(count-1)*500).zfill(4)}.png', com_np[...,[2,1,0]])
 
@@ -138,6 +143,8 @@ def main(input_path, mask_path, output_path, ckpt_path, n_warmup=10, r_erode=10,
         imageio.mimwrite(f'{output_path}/{video_name}_pha.mp4', phas, fps=fps, quality=7)
         length = length - n_warmup
         mask_path = f'{output_path}/{video_name}/pha/{str(count*500-1).zfill(4)}.png'
+    end = time.time()
+    print(end-start)
 
 if __name__ == '__main__':
     import argparse
